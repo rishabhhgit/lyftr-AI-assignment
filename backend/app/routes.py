@@ -83,6 +83,13 @@ async def chat(
                 active_system_prompt = row["content"]
                 break
 
+    if not active_system_prompt:
+        active_system_prompt = (
+            "You are a helpful, direct, and concise AI assistant. "
+            "Answer clearly and directly using natural formatting, bullet points, or code where appropriate. "
+            "Do not start your reply with 'TL;DR:' or summary preambles."
+        )
+
     if active_system_prompt:
         messages.append({"role": "system", "content": active_system_prompt})
 

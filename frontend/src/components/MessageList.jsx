@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MetaBadges } from './MetaBadges.jsx';
+import { MarkdownContent } from './MarkdownContent.jsx';
 
 function CopyButton({ text }) {
   const [copied, setCopied] = useState(false);
@@ -36,7 +37,11 @@ export function MessageList({ messages, isLoading }) {
               </div>
               <div className="assistant-content-col">
                 <div className={`message-text ${msg.isError ? 'error-text' : ''}`}>
-                  {msg.content}
+                  {msg.isError ? (
+                    msg.content
+                  ) : (
+                    <MarkdownContent content={msg.content} />
+                  )}
                 </div>
                 {!msg.isError && (
                   <div className="assistant-footer-bar">
