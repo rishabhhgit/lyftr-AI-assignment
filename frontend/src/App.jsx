@@ -26,6 +26,8 @@ export default function App() {
     sessions,
     startNewSession,
     selectSession,
+    deleteSession,
+    clearAllSessions,
   } = useChat();
 
   const [input, setInput] = useState('');
@@ -136,32 +138,70 @@ export default function App() {
 
         {/* Sessions History List */}
         <div className="sidebar-history">
-          <div className="history-label">Recent chats</div>
-          <div className="history-list">
-            <button
-              type="button"
-              className={`history-item active`}
-              onClick={handleCopySession}
-              title={`Current Session: ${sessionId} (Click to copy)`}
-            >
-              <span className="chat-bubble-icon">💬</span>
-              <span className="history-title">Current ({sessionId.slice(0, 8)})</span>
-              <span className="copy-badge">{copiedSession ? '✓' : '📋'}</span>
-            </button>
+          <div className="history-header">
+            <span className="history-label">Recent chats</span>
+            {sessions.length > 0 && (
+              <button
+                type="button"
+                className="clear-all-link"
+                onClick={clearAllSessions}
+                title="Clear all saved chats"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
 
+          <div className="history-list">
+            {/* Current Active Session */}
+            <div className="history-item-row active">
+              <button
+                type="button"
+                className="history-select-btn"
+                onClick={handleCopySession}
+                title={`Current Session: ${sessionId} (Click to copy ID)`}
+              >
+                <span className="chat-bubble-icon">💬</span>
+                <span className="history-title">Current ({sessionId.slice(0, 8)})</span>
+                <span className="copy-badge">{copiedSession ? '✓' : '📋'}</span>
+              </button>
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  className="history-delete-btn"
+                  onClick={(e) => deleteSession(sessionId, e)}
+                  title="Clear this conversation"
+                  aria-label="Delete chat"
+                >
+                  🗑
+                </button>
+              )}
+            </div>
+
+            {/* Other Saved Sessions */}
             {sessions
               .filter((s) => s.id !== sessionId)
               .map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  className="history-item"
-                  onClick={() => selectSession(s.id)}
-                  title={s.title || s.id}
-                >
-                  <span className="chat-bubble-icon">💬</span>
-                  <span className="history-title">{s.title || s.id}</span>
-                </button>
+                <div key={s.id} className="history-item-row">
+                  <button
+                    type="button"
+                    className="history-select-btn"
+                    onClick={() => selectSession(s.id)}
+                    title={s.title || s.id}
+                  >
+                    <span className="chat-bubble-icon">💬</span>
+                    <span className="history-title">{s.title || s.id}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="history-delete-btn"
+                    onClick={(e) => deleteSession(s.id, e)}
+                    title="Delete this chat"
+                    aria-label="Delete chat"
+                  >
+                    🗑
+                  </button>
+                </div>
               ))}
           </div>
         </div>
@@ -244,6 +284,17 @@ export default function App() {
           </div>
 
           <div className="topbar-right">
+            {messages.length > 0 && (
+              <button
+                type="button"
+                className="topbar-btn delete-chat-top-btn"
+                onClick={(e) => deleteSession(sessionId, e)}
+                title="Clear current conversation"
+              >
+                🗑 Clear
+              </button>
+            )}
+
             <button
               type="button"
               className={`topbar-btn ${showSystemPrompt ? 'active' : ''}`}

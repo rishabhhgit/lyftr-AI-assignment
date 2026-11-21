@@ -200,3 +200,14 @@ async def get_session_messages(
         )
 
     return SessionHistoryResponse(session_id=session_id, messages=messages_out)
+
+
+@router.delete("/sessions/{session_id}")
+async def delete_session(
+    session_id: str,
+    db: aiosqlite.Connection = Depends(get_db),
+):
+    """Delete a session's message history from the database."""
+    await db.execute("DELETE FROM messages WHERE session_id = ?", (session_id,))
+    await db.commit()
+    return {"status": "ok", "deleted_session": session_id}

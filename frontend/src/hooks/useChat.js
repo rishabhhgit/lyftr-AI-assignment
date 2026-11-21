@@ -1,6 +1,6 @@
 /**
  * useChat – manages session state, API calls, and message history.
- * Supports multiple sessions and persistent recent session history.
+ * Supports multiple sessions, persistence, and session deletion.
  */
 import { useState, useCallback, useEffect } from 'react';
 
@@ -40,6 +40,7 @@ export function useChat() {
   }, []);
 
   const selectSession = useCallback(async (id) => {
+    if (id === sessionId) return;
     setSessionId(id);
     setIsLoading(true);
     try {
@@ -55,7 +56,58 @@ export function useChat() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [sessionId]);
+
+  const deleteSession = useCallback(
+    async (idToDelete, e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      // Remove from saved sessions
+      setSessions((prev) => prev.filter((s) => s.id !== idToDelete));
+
+      // Delete from backend DB if reachable
+      try {
+        await fetch(`${API_BASE}/sessions/${idToDelete}`, {
+          method: 'DELETE',
+        });
+      } catch {
+        /* ignore network errors */
+      }
+
+      // If the deleted session is currently active, start a fresh new session
+      if (idToDelete === sessionId) {
+        const newId = generateSessionId();
+        setSessionId(newId);
+        setMessages([]);
+      }
+    },
+    [sessionId]
+  );
+
+  const clearAllSessions = useCallback(async () => {
+    const sessionIdsToDelete = sessions.map((s) => s.id);
+    setSessions([]);
+    try {
+      localStorage.removeItem('lyftr_saved_sessions');
+    } catch {
+      /* ignore */
+    }
+
+    for (const id of sessionIdsToDelete) {
+      try {
+        await fetch(`${API_BASE}/sessions/${id}`, { method: 'DELETE' });
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const newId = generateSessionId();
+    setSessionId(newId);
+    setMessages([]);
+  }, [sessions]);
 
   const sendMessage = useCallback(
     async (text, systemPrompt) => {
@@ -73,7 +125,7 @@ export function useChat() {
         const title = trimmedText.length > 28 ? trimmedText.slice(0, 28) + '...' : trimmedText;
         const exists = prev.find((s) => s.id === sessionId);
         if (exists) return prev;
-        return [{ id: sessionId, title, date: new Date().toLocaleDateString() }, ...prev].slice(0, 15);
+        return [{ id: sessionId, title, date: new Date().toLocaleDateString() }, ...prev].slice(0, 20);
       });
 
       try {
@@ -120,5 +172,7 @@ export function useChat() {
     sessions,
     startNewSession,
     selectSession,
+    deleteSession,
+    clearAllSessions,
   };
 }

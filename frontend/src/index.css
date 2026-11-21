@@ -197,13 +197,36 @@ body {
   gap: 4px;
 }
 
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px 4px;
+}
+
 .history-label {
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-muted);
-  padding: 6px 8px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.clear-all-link {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.clear-all-link:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .history-list {
@@ -212,11 +235,28 @@ body {
   gap: 2px;
 }
 
-.history-item {
+.history-item-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  width: 100%;
+  border-radius: 8px;
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.history-item-row:hover {
+  background: var(--sidebar-hover);
+}
+
+.history-item-row.active {
+  background: var(--sidebar-active);
+}
+
+.history-select-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
   padding: 8px 10px;
   border-radius: 8px;
   border: none;
@@ -225,21 +265,19 @@ body {
   font-size: 0.85rem;
   text-align: left;
   cursor: pointer;
-  transition: all 0.15s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.15s ease;
 }
 
-.history-item:hover {
-  background: var(--sidebar-hover);
-  color: var(--text-primary);
-}
-
-.history-item.active {
-  background: var(--sidebar-active);
+.history-item-row.active .history-select-btn {
   color: var(--text-primary);
   font-weight: 500;
+}
+
+.history-item-row:hover .history-select-btn {
+  color: var(--text-primary);
 }
 
 .chat-bubble-icon {
@@ -252,11 +290,47 @@ body {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .copy-badge {
   font-size: 0.72rem;
   opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.history-delete-btn {
+  opacity: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  margin-right: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.history-item-row:hover .history-delete-btn,
+.history-item-row:focus-within .history-delete-btn {
+  opacity: 1;
+}
+
+.history-delete-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.delete-chat-top-btn {
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.delete-chat-top-btn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: #ef4444 !important;
 }
 
 /* ── Sidebar Footer ───────────────────────────────────────────── */
