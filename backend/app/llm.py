@@ -5,6 +5,12 @@ import litellm
 from litellm import completion
 from app.config import get_settings
 
+# Optimize LiteLLM for speed: disable external telemetry pings
+litellm.telemetry = False
+os.environ["LITELLM_TELEMETRY"] = "False"
+litellm.set_verbose = False
+litellm.drop_params = True
+
 
 class AllKeysFailedException(Exception):
     """Raised when every key in the key pool fails."""
@@ -26,8 +32,14 @@ def init_cache():
                 litellm.enable_cache(type="local")
         else:
             litellm.enable_cache(type="local")
-        litellm.set_verbose = False
         _cache_initialized = True
+
+
+# Pre-initialize cache at module load
+try:
+    init_cache()
+except Exception:
+    pass
 
 
 def get_model_for_key_index(idx: int) -> str:
@@ -45,7 +57,8 @@ def execute_llm_chat(
     Execute chat with caching, key pool iteration, and automatic failover.
     Synchronous function meant to be run in a thread pool from async FastAPI.
     """
-    init_cache()
+    if not _cache_initialized:
+        init_cache()
     settings = get_settings()
     api_keys = settings.api_keys_list
     if not api_keys:
