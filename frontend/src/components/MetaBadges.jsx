@@ -19,7 +19,7 @@ export function MetaBadges({ metadata }) {
         className={`badge ${isCache ? 'badge-source-cache' : 'badge-source-live'}`}
         title={isCache ? 'Served instantly from local LiteLLM cache' : 'Generated via real-time live model inference'}
       >
-        <span className="badge-icon">{isCache ? '⚡' : '🔴'}</span>
+        <span className="badge-icon">{isCache ? '⚡' : <span className="live-dot" />}</span>
         <span data-testid="meta-source">{metadata.resolution_source}</span>
       </span>
 
