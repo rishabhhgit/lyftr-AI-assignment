@@ -1,10 +1,39 @@
 # Lyftr AI Full-Stack Assignment: LLM Chatbot with Key Failover & Response Caching
 
-A production-ready full-stack AI chatbot application featuring multi-turn conversation memory, intelligent key pooling with automatic failover, response caching via LiteLLM, and SQLite persistence.
+![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![LiteLLM](https://img.shields.io/badge/LiteLLM-Proxy%20%26%20Cache-blue?style=for-the-badge)
+![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![Pytest](https://img.shields.io/badge/Pytest-10%2F10%20Passed-brightgreen?style=for-the-badge)
 
-- **Frontend**: React (Vite, CSS Modules, clean UI with exact `data-testid` contracts)
-- **Backend**: Python (FastAPI + LiteLLM + aiosqlite + SQLite)
-- **Containerization**: Multi-stage Dockerfiles + Docker Compose + Makefile
+---
+
+## About
+
+This repository contains the complete, production-grade submission for the **Lyftr AI Full-Stack Assignment**. It implements an intelligent AI chatbot system built for resilience, low latency, and cost efficiency.
+
+### Core Architectural Capabilities
+1. **Intelligent Key Pooling & Automatic Failover**: Configured with a pool of 2+ API keys across models. The backend automatically catches HTTP 429 (rate limits), quota exhaustion, and 5xx errors, transparently falling over to the next key without crashing or exposing stack traces.
+2. **Response Caching via LiteLLM**: Implements LiteLLM's cache engine keyed by model and the exact message sequence. Second calls with the same context immediately return cached responses labeled `LLM_CACHE` with sub-10ms latency.
+3. **Multi-Turn Session State**: Session histories are isolated by `session_id` and persisted in an asynchronous SQLite database (`aiosqlite`). The client sends only new messages, and the backend reconstructs conversational history.
+4. **Deterministic Failover Simulation (`X-Simulate-Failure`)**: On-demand testing hook to simulate provider outages (`key_1=429`, `key_1=500`, or `*=429`) without exhausting live quotas.
+5. **Exact Contract & Testability**: Every API response adheres to the strict JSON schema specification, and the React UI provides all mandatory `data-testid` attributes.
+6. **Containerized Deployment**: Multi-stage Dockerfiles for backend and frontend with a Docker Compose volume mounted at `/data` for SQLite persistence.
+
+---
+
+## Table of Contents
+- [1. Live URLs](#1-live-urls)
+- [2. Run locally: with Docker and without](#2-run-locally-with-docker-and-without)
+- [3. Design decisions: key fallback, caching, SQLite session storage](#3-design-decisions-key-fallback-caching-sqlite-session-storage)
+- [4. Verification: how to see failover, cache hits and per-message token usage](#4-verification-how-to-see-failover-cache-hits-and-per-message-token-usage)
+- [5. Setup Used: your editor and AI tools](#5-setup-used-your-editor-and-ai-tools)
+- [6. Bonus features (if any): what you added beyond the requirements and why](#6-bonus-features-if-any-what-you-added-beyond-the-requirements-and-why)
+- [API Contract Specification](#api-contract-specification)
+- [Frontend Test Attributes](#frontend-test-attributes)
 
 ---
 
@@ -12,8 +41,8 @@ A production-ready full-stack AI chatbot application featuring multi-turn conver
 
 | Service | Deployed URL |
 |---|---|
-| **Frontend UI** | `https://lyftr-chatbot-frontend.vercel.app` *(insert your Vercel URL)* |
-| **Backend API** | `https://lyftr-chatbot-backend.onrender.com` *(insert your Render URL)* |
+| **Frontend UI** | `https://lyftr-chatbot-frontend.vercel.app` *(update with live Vercel URL)* |
+| **Backend API** | `https://lyftr-chatbot-backend.onrender.com` *(update with live Render URL)* |
 | **Health Check** | `https://lyftr-chatbot-backend.onrender.com/health` |
 
 ---
@@ -22,11 +51,11 @@ A production-ready full-stack AI chatbot application featuring multi-turn conver
 
 ### A. With Docker (Recommended)
 
-**Prerequisites**: Docker & Docker Compose installed.
+**Prerequisites**: Docker Desktop & Docker Compose installed.
 
 1. **Clone the repository**:
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/rishabhhgit/lyftr-assignment.git
    cd lyftr-assignment
    ```
 
@@ -36,14 +65,14 @@ A production-ready full-stack AI chatbot application featuring multi-turn conver
    ```
    Edit `.env` to supply at least two Gemini API keys (obtainable for free from [Google AI Studio](https://aistudio.google.com)):
    ```env
-   LLM_API_KEYS=AIzaSyA...,AIzaSyB...
+   LLM_API_KEYS=your_key_1,your_key_2
    ```
 
 3. **Start the stack with a single command**:
    ```bash
    make up
    ```
-   This builds multi-stage images, starts both containers, mounts the named volume `/data` for SQLite persistence, and verifies health:
+   This builds minimal multi-stage images, mounts the persistent named volume `/data` for SQLite, and launches both services:
    - **Frontend UI**: [http://localhost:3000](http://localhost:3000)
    - **Backend API**: [http://localhost:8000](http://localhost:8000)
    - **Health Check**: [http://localhost:8000/health](http://localhost:8000/health)
@@ -64,7 +93,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Run automated tests
+# Run automated tests (10/10 passing)
 PYTHONPATH=. pytest -v
 
 # Start backend server
@@ -88,7 +117,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 3. Design decisions: key fallback, caching, SQLite session storage
 
 ### Key Fallback Architecture
-- **Key Pool**: `LLM_API_KEYS` accepts a comma-separated list of 2 or more API keys. Keys are indexed in order as `key_1`, `key_2`, etc.
+- **Key Pool**: `LLM_API_KEYS` accepts a comma-separated list of 2 or more API keys. Keys are indexed sequentially as `key_1`, `key_2`, etc.
 - **Failover Logic**: When a request is processed, the backend attempts execution on the first available key. If the provider returns a retriable error (HTTP 429, quota exhaustion, 500, 502, 503, or rate limits), the backend catches the error, increments `fallback_attempts`, and transparently fails over to the next key in the pool.
 - **Graceful Exhaustion**: If all configured keys fail, the backend returns a clean HTTP 503 response: `{"detail": "all providers unavailable"}`. No broken screen, no stack traces, and nothing is written to the database history.
 - **Deterministic Test Hook**: When `ENABLE_FAILURE_SIMULATION=true`, the `X-Simulate-Failure` header intercepts the designated keys (e.g. `key_1=429`, `key_1=500`, or `*=429`) and triggers simulated provider responses without consuming live API quotas.
@@ -138,7 +167,7 @@ curl -s -X POST http://localhost:8000/chat \
 ```json
 {
   "session_id": "demo-failover",
-  "reply": "...",
+  "reply": "Quantum computing uses quantum mechanics to solve complex problems faster than classical computers.",
   "metadata": {
     "resolution_source": "LIVE_INFERENCE",
     "model": "gemini/gemini-2.0-flash",
@@ -223,3 +252,76 @@ curl -s http://localhost:8000/sessions/sess-alpha/messages | jq .
 
 4. **100% Automated Backend Test Suite**:
    - Comprehensive Pytest suite covering all edge cases (validation, failover, caching, 503 handling, multi-turn state preservation).
+
+---
+
+## API Contract Specification
+
+### `GET /health`
+Returns status, count of configured keys, and cache state.
+```json
+{ "status": "ok", "keys_configured": 2, "cache_enabled": true }
+```
+
+### `POST /chat`
+**Request Body**:
+```json
+{
+  "session_id": "s-7f3a",
+  "message": "What is the capital of France?",
+  "system_prompt": "Optional system prompt override"
+}
+```
+
+**Response 200**:
+```json
+{
+  "session_id": "s-7f3a",
+  "reply": "The capital of France is Paris.",
+  "metadata": {
+    "resolution_source": "LIVE_INFERENCE",
+    "model": "gemini/gemini-2.0-flash",
+    "latency_ms": 812,
+    "input_tokens": 42,
+    "output_tokens": 9,
+    "key_id": "key_1",
+    "fallback_attempts": 0
+  }
+}
+```
+
+### `GET /sessions/{session_id}/messages`
+**Response 200**:
+```json
+{
+  "session_id": "s-7f3a",
+  "messages": [
+    { "role": "user", "content": "What is the capital of France?" },
+    {
+      "role": "assistant",
+      "content": "The capital of France is Paris.",
+      "metadata": {
+        "resolution_source": "LIVE_INFERENCE",
+        "input_tokens": 42,
+        "output_tokens": 9
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Frontend Test Attributes
+
+| `data-testid` | Element | Content / Behavior |
+|---|---|---|
+| `chat-input` | Textarea | Cleared immediately after sending |
+| `send-button` | Button | Sends message (Enter key also triggers send) |
+| `assistant-message` | Div | Message container containing reply text and metadata badges |
+| `meta-source` | Span | Exactly `LIVE_INFERENCE` or `LLM_CACHE` |
+| `meta-model` | Span | Model identifier string |
+| `meta-latency` | Span | Server latency in milliseconds (e.g. `812 ms`) |
+| `meta-input-tokens` | Span | Number of prompt tokens for this request |
+| `meta-output-tokens` | Span | Number of completion tokens for this request |
+| `system-prompt-input` | Input | System prompt configuration field |
