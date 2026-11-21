@@ -13,42 +13,45 @@ function CopyButton({ text }) {
   return (
     <button
       onClick={handleCopy}
-      className="copy-btn"
+      className="action-btn copy-btn"
       title="Copy to clipboard"
       aria-label="Copy message"
     >
-      {copied ? '✓ Copied' : '⧉ Copy'}
+      <span className="action-icon">{copied ? '✓' : '⧉'}</span>
+      <span className="action-text">{copied ? 'Copied' : 'Copy'}</span>
     </button>
   );
 }
 
 export function MessageList({ messages, isLoading }) {
   return (
-    <>
+    <div className="message-stream">
       {messages.map((msg, i) => (
-        <div key={i} className={`msg-row ${msg.role}`}>
-          <div className={`avatar ${msg.role === 'user' ? 'user' : 'bot'}`}>
-            {msg.role === 'user' ? '👤' : '🤖'}
-          </div>
-
+        <div key={i} className={`msg-row-container ${msg.role}`}>
           {msg.role === 'assistant' ? (
-            /* ── Assistant bubble with required data-testid ───────── */
-            <div
-              data-testid="assistant-message"
-              className={`msg-bubble bot ${msg.isError ? 'error' : ''}`}
-            >
-              <div className="msg-content">{msg.content}</div>
-              {!msg.isError && (
-                <div className="bot-footer">
-                  <MetaBadges metadata={msg.metadata} />
-                  <CopyButton text={msg.content} />
+            /* ── Assistant message: container with exact testid ── */
+            <div data-testid="assistant-message" className="assistant-message-row">
+              <div className="assistant-avatar" title="Lyftr AI">
+                <span>🤖</span>
+              </div>
+              <div className="assistant-content-col">
+                <div className={`message-text ${msg.isError ? 'error-text' : ''}`}>
+                  {msg.content}
                 </div>
-              )}
+                {!msg.isError && (
+                  <div className="assistant-footer-bar">
+                    <MetaBadges metadata={msg.metadata} />
+                    <CopyButton text={msg.content} />
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
-            /* ── User bubble ──────────────────────────────────────── */
-            <div className="msg-bubble user">
-              <div className="msg-content">{msg.content}</div>
+            /* ── User message: ChatGPT rounded bubble ──────────── */
+            <div className="user-message-row">
+              <div className="user-bubble">
+                <div className="message-text">{msg.content}</div>
+              </div>
             </div>
           )}
         </div>
@@ -56,15 +59,19 @@ export function MessageList({ messages, isLoading }) {
 
       {/* Typing indicator */}
       {isLoading && (
-        <div className="msg-row bot">
-          <div className="avatar bot">🤖</div>
-          <div className="msg-bubble bot">
-            <div className="typing">
-              <span /><span /><span />
+        <div className="assistant-message-row loading-row">
+          <div className="assistant-avatar" title="Lyftr AI">
+            <span>🤖</span>
+          </div>
+          <div className="assistant-content-col">
+            <div className="chatgpt-typing-indicator">
+              <span className="typing-dot" />
+              <span className="typing-dot" />
+              <span className="typing-dot" />
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
