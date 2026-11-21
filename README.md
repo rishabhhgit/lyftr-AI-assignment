@@ -55,7 +55,7 @@ This repository contains the complete, production-grade submission for the **Lyf
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/rishabhhgit/lyftr-assignment.git
+   git clone https://github.com/rishabhhgit/lyftr-AI-assignment.git
    cd lyftr-assignment
    ```
 
