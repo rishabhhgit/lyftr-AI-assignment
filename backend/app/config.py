@@ -12,10 +12,14 @@ class Settings(BaseSettings):
     )
 
     llm_api_keys: str = ""
-    database_url: str = "sqlite+aiosqlite:////data/app.db"
+    database_url: str = (
+        "sqlite+aiosqlite:////tmp/app.db"
+        if os.environ.get("VERCEL")
+        else "sqlite+aiosqlite:////data/app.db"
+    )
     allowed_origins: str = "http://localhost:3000"
     enable_failure_simulation: bool = False
-    default_model: str = "gemini/gemini-2.0-flash"
+    default_model: str = "gemini/gemini-2.0-flash-lite"
     cache_type: str = "local"  # 'local' or 'disk'
     cache_dir: str = "/data/.litellm_cache"
 
