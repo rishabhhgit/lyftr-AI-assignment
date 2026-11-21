@@ -9,7 +9,8 @@ os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test_fastapi.db"
 os.environ["LLM_API_KEYS"] = "test_key_1,test_key_2"
 os.environ["ALLOWED_ORIGINS"] = "http://localhost:3000"
 os.environ["ENABLE_FAILURE_SIMULATION"] = "true"
-os.environ["DEFAULT_MODEL"] = "gemini/gemini-2.0-flash"
+os.environ["DEFAULT_MODEL"] = "gemini/gemini-3.5-flash-lite"
+os.environ["BACKUP_MODEL"] = "gemini/gemini-3.6-flash"
 
 from app.main import app
 from app.config import get_settings
@@ -19,11 +20,11 @@ import litellm
 get_settings.cache_clear()
 
 
-def make_mock_completion_response(content="Paris is the capital of France.", prompt_tokens=42, completion_tokens=9):
+def make_mock_completion_response(content="Paris is the capital of France.", prompt_tokens=42, completion_tokens=9, model="gemini/gemini-3.5-flash-lite"):
     resp = litellm.ModelResponse()
     resp.choices = [litellm.Choices(message=litellm.Message(content=content))]
     resp.usage = litellm.Usage(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens, total_tokens=prompt_tokens + completion_tokens)
-    resp.model = "gemini/gemini-2.0-flash"
+    resp.model = model
     return resp
 
 
@@ -97,7 +98,7 @@ async def test_chat_live_inference(client):
     assert data["metadata"]["fallback_attempts"] == 0
     assert data["metadata"]["input_tokens"] == 42
     assert data["metadata"]["output_tokens"] == 9
-    assert data["metadata"]["model"] == "gemini/gemini-2.0-flash"
+    assert data["metadata"]["model"] == "gemini/gemini-3.5-flash-lite"
 
 
 @pytest.mark.asyncio

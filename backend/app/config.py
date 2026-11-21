@@ -19,7 +19,8 @@ class Settings(BaseSettings):
     )
     allowed_origins: str = "http://localhost:3000"
     enable_failure_simulation: bool = False
-    default_model: str = "gemini/gemini-2.0-flash-lite"
+    default_model: str = "gemini/gemini-3.5-flash-lite"
+    backup_model: str = "gemini/gemini-3.6-flash"
     cache_type: str = "local"  # 'local' or 'disk'
     cache_dir: str = "/data/.litellm_cache"
 

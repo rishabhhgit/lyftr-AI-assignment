@@ -10,7 +10,8 @@ services:
       - DATABASE_URL=${DATABASE_URL:-sqlite+aiosqlite:////data/app.db}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000}
       - ENABLE_FAILURE_SIMULATION=${ENABLE_FAILURE_SIMULATION:-true}
-      - DEFAULT_MODEL=${DEFAULT_MODEL:-gemini/gemini-2.0-flash-lite}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-gemini/gemini-3.5-flash-lite}
+      - BACKUP_MODEL=${BACKUP_MODEL:-gemini/gemini-3.6-flash}
       - PORT=8000
     volumes:
       - sqlite_data:/data

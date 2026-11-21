@@ -30,6 +30,13 @@ def init_cache():
         _cache_initialized = True
 
 
+def get_model_for_key_index(idx: int) -> str:
+    settings = get_settings()
+    if idx == 0:
+        return settings.default_model
+    return settings.backup_model or settings.default_model
+
+
 def execute_llm_chat(
     messages: List[Dict[str, str]],
     simulate_failures: Optional[Dict[str, int]] = None,
@@ -44,12 +51,12 @@ def execute_llm_chat(
     if not api_keys:
         raise AllKeysFailedException("No API keys configured")
 
-    model = settings.default_model
+    default_model = settings.default_model
 
     # 1. Check cache first
     start_cache_check = time.time()
     try:
-        cached_result = litellm.cache.get_cache(messages=messages, model=model)
+        cached_result = litellm.cache.get_cache(messages=messages, model=default_model)
     except Exception:
         cached_result = None
 
@@ -61,13 +68,13 @@ def execute_llm_chat(
             usage = cached_result.get("usage") or {}
             input_tokens = usage.get("prompt_tokens", 0)
             output_tokens = usage.get("completion_tokens", 0)
-            cached_model = cached_result.get("model") or model
+            cached_model = cached_result.get("model") or default_model
         else:
             reply = cached_result.choices[0].message.content or ""
             usage = getattr(cached_result, "usage", None)
             input_tokens = getattr(usage, "prompt_tokens", 0) if usage else 0
             output_tokens = getattr(usage, "completion_tokens", 0) if usage else 0
-            cached_model = getattr(cached_result, "model", None) or model
+            cached_model = getattr(cached_result, "model", None) or default_model
 
         return {
             "reply": reply,
@@ -87,6 +94,7 @@ def execute_llm_chat(
 
     for idx, key in enumerate(api_keys):
         key_id = f"key_{idx + 1}"
+        current_model = get_model_for_key_index(idx)
 
         # Check simulation hook
         simulated_status = None
@@ -104,7 +112,7 @@ def execute_llm_chat(
         start_time = time.time()
         try:
             response = completion(
-                model=model,
+                model=current_model,
                 messages=messages,
                 api_key=key,
                 caching=False,  # We manage LiteLLM cache explicitly
@@ -116,11 +124,11 @@ def execute_llm_chat(
             usage = getattr(response, "usage", None)
             input_tokens = getattr(usage, "prompt_tokens", 0) if usage else 0
             output_tokens = getattr(usage, "completion_tokens", 0) if usage else 0
-            actual_model = getattr(response, "model", None) or model
+            actual_model = getattr(response, "model", None) or current_model
 
             # Store successful response in LiteLLM cache
             try:
-                litellm.cache.add_cache(result=response, messages=messages, model=model)
+                litellm.cache.add_cache(result=response, messages=messages, model=default_model)
             except Exception as cache_err:
                 pass
 
