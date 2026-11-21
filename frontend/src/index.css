@@ -477,6 +477,27 @@ body {
   color: var(--text-primary);
 }
 
+.new-chat-top-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.new-chat-top-btn .plus-icon {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.new-chat-top-btn:hover {
+  background: var(--card-hover);
+  border-color: var(--border-focus);
+}
+
 .topbar-btn.active {
   background: var(--chatgpt-green);
   border-color: var(--chatgpt-green);
@@ -612,15 +633,10 @@ body {
 .hero-icon {
   width: 48px;
   height: 48px;
-  background: var(--chatgpt-green);
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  color: #fff;
   margin-bottom: 20px;
-  box-shadow: 0 4px 14px rgba(16, 163, 127, 0.4);
 }
 
 .hero-heading {
@@ -714,15 +730,11 @@ body {
 }
 
 .assistant-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--chatgpt-green);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
   flex-shrink: 0;
   margin-top: 2px;
 }

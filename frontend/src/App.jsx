@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useChat } from './hooks/useChat.js';
 import { MessageList } from './components/MessageList.jsx';
+import { BrandLogo } from './components/BrandLogo.jsx';
 
 const SUGGESTIONS = [
   { title: 'What is the capital of France?', subtitle: 'Geography & facts' },
@@ -109,7 +110,7 @@ export default function App() {
         <div className="sidebar-top">
           <div className="sidebar-brand-row">
             <div className="sidebar-brand">
-              <span className="brand-icon">⚡</span>
+              <BrandLogo size={24} />
               <span className="brand-text">Lyftr AI</span>
             </div>
             <button
@@ -263,11 +264,12 @@ export default function App() {
 
             <button
               type="button"
-              className="icon-btn new-chat-top-btn"
+              className="topbar-btn new-chat-top-btn"
               onClick={startNewSession}
-              title="New Chat"
+              title="Start a new chat"
             >
-              ✏️
+              <span className="plus-icon">+</span>
+              <span className="btn-label">New chat</span>
             </button>
           </div>
         </header>
@@ -318,7 +320,7 @@ export default function App() {
               /* ── ChatGPT Centered Welcome Hero ── */
               <div className="chatgpt-hero">
                 <div className="hero-icon">
-                  <span>⚡</span>
+                  <BrandLogo size={46} />
                 </div>
                 <h1 className="hero-heading">What can I help with?</h1>
 

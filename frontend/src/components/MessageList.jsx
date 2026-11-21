@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MetaBadges } from './MetaBadges.jsx';
 import { MarkdownContent } from './MarkdownContent.jsx';
+import { BrandLogo } from './BrandLogo.jsx';
 
 function CopyButton({ text }) {
   const [copied, setCopied] = useState(false);
@@ -33,7 +34,7 @@ export function MessageList({ messages, isLoading }) {
             /* ── Assistant message: container with exact testid ── */
             <div data-testid="assistant-message" className="assistant-message-row">
               <div className="assistant-avatar" title="Lyftr AI">
-                <span>🤖</span>
+                <BrandLogo size={22} />
               </div>
               <div className="assistant-content-col">
                 <div className={`message-text ${msg.isError ? 'error-text' : ''}`}>
@@ -66,7 +67,7 @@ export function MessageList({ messages, isLoading }) {
       {isLoading && (
         <div className="assistant-message-row loading-row">
           <div className="assistant-avatar" title="Lyftr AI">
-            <span>🤖</span>
+            <BrandLogo size={22} />
           </div>
           <div className="assistant-content-col">
             <div className="chatgpt-typing-indicator">
