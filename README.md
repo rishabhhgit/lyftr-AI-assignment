@@ -41,9 +41,9 @@ This repository contains the complete, production-grade submission for the **Lyf
 
 | Service | Deployed URL |
 |---|---|
-| **Frontend UI** | `https://lyftr-chatbot-frontend.vercel.app` *(update with live Vercel URL)* |
-| **Backend API** | `https://lyftr-chatbot-backend.onrender.com` *(update with live Render URL)* |
-| **Health Check** | `https://lyftr-chatbot-backend.onrender.com/health` |
+| **Frontend UI** | `https://lyftr-ai-assignment-frontend-nine.vercel.app/` |
+| **Backend API** | `https://lyftr-ai-assignment-backend.vercel.app` |
+| **Health Check** | `https://lyftr-ai-assignment-backend.vercel.app/health` |
 
 ---
 
